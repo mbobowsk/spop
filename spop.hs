@@ -10,19 +10,15 @@ menu prompts = do
 	putStrLn ""
 	case action of
 		'd' -> do
-							a <- doAdd' prompts
-							-- menu(doAdd' prompts)
-							menu a
+			a <- doAdd prompts
+			menu a
 		'p' -> do 
 			doBrowse prompts
 			menu prompts
 		'w' -> putStrLn "Have a nice day!"
 		_  -> menu prompts
 
-doAdd prompts = "a":prompts
-
-
-doAdd' prompts = do
+doAdd prompts = do
 	putStrLn "Podaj nazwę:"
 	name <- getLine
 	return (name:prompts)
