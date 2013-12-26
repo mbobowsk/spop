@@ -1,3 +1,7 @@
+import Locale
+import Data.Time
+import Data.Time.Format
+
 main = do
 	putStrLn "Witamy w systemie przypomnień"
 	menu []
@@ -5,7 +9,7 @@ main = do
 menu prompts = do
 	putStrLn "Wybierz jedną z akcji:"
 	putStrLn "(D)odaj    (P)rzeglądaj"
-	putStrLn "(W)yjście"
+	putStrLn "(T)est (W)yjście"
 	action <- getChar
 	putStrLn ""
 	case action of
@@ -16,12 +20,26 @@ menu prompts = do
 			doBrowse prompts
 			menu prompts
 		'w' -> putStrLn "Have a nice day!"
+		't' -> do
+			doTest
+			menu prompts
 		_  -> menu prompts
 
 doAdd prompts = do
-	putStrLn "Podaj nazwę:"
+	name <- getName
+	date <- getDate
+	let task = (name, date)
+	return (task:prompts)
+
+getName = do
+	putStrLn "Podaj nazwę zadania:"
 	name <- getLine
-	return (name:prompts)
+	return name
+
+getDate = do
+	putStrLn "Podaj datę w formacie yyyy-mm-dd HH:MM:"
+	dateString <- getLine
+	let timeFromString = readTime defaultTimeLocale "%Y-%m-%d %H:%M" dateString :: UTCTime
+	return timeFromString
 
 doBrowse prompts = do print prompts
-
