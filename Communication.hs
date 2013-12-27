@@ -5,11 +5,17 @@ module Communication
 import Logic
 import qualified Data.Map as Map
 
+import System.Locale
+import Data.Time
+import Data.Time.Format
+import Data.Maybe
+
 menu tasks = do
     putStrLn "\nMENU GŁÓWNE"
     putStrLn "1 - dodaj zadanie"
     putStrLn "2 - usuń zadanie"
     putStrLn "3 - wyswietl zadania"
+    putStrLn "4 - podaj czas systemowy"
     putStrLn "0 - wyjdź"
     c <- getLine
     case (read c::Int) of
@@ -24,6 +30,10 @@ menu tasks = do
             putStrLn "Wyświetlanie zadań"
             print tasks
             menu tasks
+        4 -> do
+            time <- getTimeNow
+            putStrLn ("Czas systemowy: " ++ time)
+            menu tasks
         0 -> putStrLn "choice is 3"
         _ ->do
             putStrLn "Nieprawidłowy wybór"
@@ -32,12 +42,9 @@ menu tasks = do
 makeTask = do
     putStrLn "Podaj nazwe zadania:"
     taskName <- getLine
---    putStrLn "Podaj date (yyyy/mm/dd np 2013/01/13):"
---    dateString <- getLine
---    putStrLn "Podaj termin zadania (hh:mm np. 15:30):"
---    timeString <- getLine
     rep <- getRepeatability
-    return $ Task {name = taskName, date = Date 2013 01 12, time = Time 12 20, repeatability = rep, isCompleted = False}
+    date <- getSafeDate
+    return $ Task {name = taskName, time = date, repeatability = rep, isCompleted = False}
 
 -- gets from user repeatability of task
 getRepeatability = do
@@ -57,3 +64,24 @@ getRepeatability = do
         _ -> do
             putStrLn "Nieprawidłowy wybór"
             getRepeatability
+
+getTimeNow = fmap (formatTime defaultTimeLocale "%Y-%m-%d %H:%M") getCurrentTime
+
+getSafeDate = do
+	date <- getDate
+	if (isNothing date)
+		then	getSafeDate
+		else	return (fromJust date)
+
+getDate = do
+	putStrLn "Podaj datę w formacie yyyy-mm-dd HH:MM:"
+	dateString <- getLine
+	let	parse = parseTime defaultTimeLocale "%Y-%m-%d %H:%M" dateString :: Maybe UTCTime
+	return parse
+
+addDay (UTCTime day time) = UTCTime (addDays 1 day) time
+addWeek (UTCTime day time) = UTCTime (addDays 7 day) time
+addMonth (UTCTime day time) = UTCTime (addDays 30 day) time
+addYear (UTCTime day time) = UTCTime (addDays 365 day) time
+
+
