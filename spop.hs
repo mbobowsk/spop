@@ -39,7 +39,11 @@ getName = do
 getDate = do
 	putStrLn "Podaj datę w formacie yyyy-mm-dd HH:MM:"
 	dateString <- getLine
-	let timeFromString = readTime defaultTimeLocale "%Y-%m-%d %H:%M" dateString :: UTCTime
-	return timeFromString
+	let 	timeFromString = readTime defaultTimeLocale "%Y-%m-%d %H:%M" dateString :: UTCTime
+		test = parseTime defaultTimeLocale "%c" dateString :: Maybe UTCTime
+	return test
 
 doBrowse prompts = do print prompts
+
+doTest = do
+	putStrLn "test"
