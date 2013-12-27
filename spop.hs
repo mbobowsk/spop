@@ -22,7 +22,7 @@ menu prompts = do
 			menu prompts
 		'w' -> putStrLn "Have a nice day!"
 		't' -> do
-			doTest
+			doTest prompts
 			menu prompts
 		_  -> menu prompts
 
@@ -49,7 +49,12 @@ getDate = do
 	let	parse = parseTime defaultTimeLocale "%Y-%m-%d %H:%M" dateString :: Maybe UTCTime
 	return parse
 
+addDay (UTCTime day time) = UTCTime (addDays 1 day) time
+addWeek (UTCTime day time) = UTCTime (addDays 7 day) time
+addMonth (UTCTime day time) = UTCTime (addDays 30 day) time
+addYear (UTCTime day time) = UTCTime (addDays 365 day) time
+
 doBrowse prompts = do print prompts
 
-doTest = do
+doTest prompts = do
 	putStrLn "test"
