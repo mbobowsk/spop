@@ -10,7 +10,8 @@ main = do
 menu prompts = do
 	putStrLn "Wybierz jedną z akcji:"
 	putStrLn "(D)odaj    (P)rzeglądaj"
-	putStrLn "(T)est (W)yjście"
+	putStrLn "(A)ktualny czas"
+	putStrLn "(T)est     (W)yjście"
 	action <- getChar
 	putStrLn ""
 	case action of
@@ -19,6 +20,9 @@ menu prompts = do
 			menu a
 		'p' -> do 
 			doBrowse prompts
+			menu prompts
+		'a' -> do
+			printTimeNow
 			menu prompts
 		'w' -> putStrLn "Have a nice day!"
 		't' -> do
@@ -36,6 +40,8 @@ getName = do
 	putStrLn "Podaj nazwę zadania:"
 	name <- getLine
 	return name
+
+printTimeNow = fmap (formatTime defaultTimeLocale "%Y-%m-%d %H:%M") getCurrentTime
 
 getSafeDate = do
 	date <- getDate
