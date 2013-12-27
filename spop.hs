@@ -1,4 +1,4 @@
-import Locale
+import System.Locale
 import Data.Time
 import Data.Time.Format
 
