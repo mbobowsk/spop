@@ -1,6 +1,7 @@
 import System.Locale
 import Data.Time
 import Data.Time.Format
+import Data.Maybe
 
 main = do
 	putStrLn "Witamy w systemie przypomnień"
@@ -27,7 +28,7 @@ menu prompts = do
 
 doAdd prompts = do
 	name <- getName
-	date <- getDate
+	date <- getSafeDate
 	let task = (name, date)
 	return (task:prompts)
 
@@ -36,12 +37,17 @@ getName = do
 	name <- getLine
 	return name
 
+getSafeDate = do
+	date <- getDate
+	if (isNothing date)
+		then	getSafeDate
+		else	return (fromJust date)
+
 getDate = do
 	putStrLn "Podaj datę w formacie yyyy-mm-dd HH:MM:"
 	dateString <- getLine
-	let 	timeFromString = readTime defaultTimeLocale "%Y-%m-%d %H:%M" dateString :: UTCTime
-		test = parseTime defaultTimeLocale "%c" dateString :: Maybe UTCTime
-	return test
+	let	parse = parseTime defaultTimeLocale "%Y-%m-%d %H:%M" dateString :: Maybe UTCTime
+	return parse
 
 doBrowse prompts = do print prompts
 
