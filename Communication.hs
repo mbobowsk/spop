@@ -144,22 +144,32 @@ parseTasks linesOfFile =
 	let 
 		taskLines = take 4 linesOfFile
 		rest = drop 4 linesOfFile
+		newTask = parseTask taskLines
+	in if (isNothing newTask)
+			then parseTasks rest
+			else (fromJust newTask):parseTasks rest
+
+parseTask taskLines =
+	let
 		taskName = taskLines !! 0
-		--date = UTCTime (fromGregorian 2011 12 16) (fromIntegral $ 12 * 3600)
-		date = fromJust (parseDate (taskLines !! 1))
+		date = parseDate (taskLines !! 1)
 		rep = parseRep (taskLines !! 2)
 		isComp = parseBool (taskLines !! 3)
-		newTask = Task {name = taskName, time = date, repeatability = rep, isCompleted = isComp}
-	in newTask:parseTasks rest
-	
-parseRep "Jednorazowe" = NoRepeat
-parseRep "Codzienne" = EveryDay
-parseRep "Cotygodniowe" = EveryWeek
-parseRep "Comiesięczne" = EveryMonth
-parseRep "Coroczne" = EveryYear
+	in if (isNothing date || isNothing rep || isNothing isComp)
+			then Nothing
+			else Just Task {name = taskName, time = fromJust date, repeatability = fromJust rep, isCompleted = fromJust isComp}
+		
 
-parseBool "True" = True
-parseBool "False" = False
+parseRep "Jednorazowe" = Just NoRepeat
+parseRep "Codzienne" = Just EveryDay
+parseRep "Cotygodniowe" = Just EveryWeek
+parseRep "Comiesięczne" = Just EveryMonth
+parseRep "Coroczne" = Just EveryYear
+parseRep _ = Nothing
+
+parseBool "True" = Just True
+parseBool "False" = Just False
+parseBool _ = Nothing
 
 parseDate text =
 	parseTime defaultTimeLocale "%Y-%m-%d %T UTC" text :: Maybe UTCTime
