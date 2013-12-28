@@ -1,7 +1,8 @@
 module Logic
 (
  Task(..),
- Repeat(..)
+ TaskBook(..),
+ Repeat(..),
 )where
 
 import Data.Time
@@ -13,6 +14,9 @@ data Task = Task { name :: String
                      , isCompleted::Bool
                      } deriving (Show)
 
+data TaskBook = TaskBook {date::UTCTime,
+                            tasks::[Task]}
+
 -- overriden show funcions for our data types
 instance Show Repeat where
     show NoRepeat = "Jednorazowe"
@@ -20,3 +24,9 @@ instance Show Repeat where
     show EveryWeek = "Cotygodniowe"
     show EveryMonth = "Comiesięczne"
     show EveryYear = "Coroczne"
+
+instance Show TaskBook where
+    show (TaskBook date tasks) = (show date) ++ (showTasks tasks)
+
+showTasks [] = "\n"
+showTasks (first:rest) = (showTasks rest)++ (show $ length rest) ++ " - " ++ (show first) ++ "\n"

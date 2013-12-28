@@ -1,20 +1,21 @@
 module Communication
-( menu
+( menu,
+  makeTask,
+  getTimeNowString
 ) where
 
 import Logic
-import qualified Data.Map as Map
 
 import System.Locale
 import Data.Time
 import Data.Time.Format
 import Data.Maybe
 
-menu tasks = do
+menu (TaskBook date tasks) = do
     putStrLn "\nMENU GŁÓWNE"
     putStrLn "1 - dodaj zadanie"
     putStrLn "2 - usuń zadanie"
-    putStrLn "3 - wyswietl zadania"
+    putStrLn "3 - Przeglądaj zadania"
     putStrLn "4 - podaj czas systemowy"
     putStrLn "0 - wyjdź"
     c <- getLine
@@ -22,22 +23,26 @@ menu tasks = do
         1 ->do
             putStrLn "choice is 1"
             newTask <- makeTask
-            menu (newTask:tasks)
+            menu (TaskBook date (newTask:tasks))
         2 -> do
             putStrLn "choice is 2"
-            menu tasks
+            menu (TaskBook date tasks)
         3 -> do
+--        1)wszystkie 2)zrealizowane 3)niezrealizowane dzisiejsze i zaległe
             putStrLn "Wyświetlanie zadań"
-            print tasks
-            menu tasks
+            print (TaskBook date tasks)
+            task <- getChoiceNumber tasks
+            putStrLn "wybrane zadanie:"
+            print task
+            menu (TaskBook date tasks)
         4 -> do
-            time <- getTimeNow
+            time <- getTimeNowString
             putStrLn ("Czas systemowy: " ++ time)
-            menu tasks
+            menu (TaskBook date tasks)
         0 -> putStrLn "choice is 3"
         _ ->do
             putStrLn "Nieprawidłowy wybór"
-            menu tasks
+            menu (TaskBook date tasks)
 
 makeTask = do
     putStrLn "Podaj nazwe zadania:"
@@ -65,8 +70,6 @@ getRepeatability = do
             putStrLn "Nieprawidłowy wybór"
             getRepeatability
 
-getTimeNow = fmap (formatTime defaultTimeLocale "%Y-%m-%d %H:%M") getCurrentTime
-
 getSafeDate = do
 	date <- getDate
 	if (isNothing date)
@@ -79,9 +82,16 @@ getDate = do
 	let	parse = parseTime defaultTimeLocale "%Y-%m-%d %H:%M" dateString :: Maybe UTCTime
 	return parse
 
+getChoiceNumber tasks = do
+    putStrLn "Podaj numer zadania:"
+    choice <- getLine
+    let choiceNr = read (choice)::Int
+    if(choiceNr>=0 && choiceNr < (length tasks)) then return $ (!!) tasks choiceNr
+        else getChoiceNumber tasks
+
 addDay (UTCTime day time) = UTCTime (addDays 1 day) time
 addWeek (UTCTime day time) = UTCTime (addDays 7 day) time
 addMonth (UTCTime day time) = UTCTime (addDays 30 day) time
 addYear (UTCTime day time) = UTCTime (addDays 365 day) time
 
-
+getTimeNowString = fmap (formatTime defaultTimeLocale "%Y-%m-%d %H:%M") getCurrentTime
