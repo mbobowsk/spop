@@ -4,6 +4,7 @@ module Communication
 ) where
 
 import Logic
+import Parser
 
 import System.Locale
 import Data.Time
@@ -83,12 +84,16 @@ getRepeatability = do
             putStrLn "Nieprawidłowy wybór"
             getRepeatability
 
+-- Get date until it is correct
+-- Returns UTCTime
 getSafeDate = do
 	date <- getDate
 	if (isNothing date)
 		then	getSafeDate
 		else	return (fromJust date)
 
+-- Get date from user and parse it
+-- Returns Maybe UTCTime
 getDate = do
 	putStrLn "Podaj datę w formacie yyyy-mm-dd HH:MM:"
 	dateString <- getLine
@@ -137,41 +142,4 @@ doRead True fileName tasks = do
 	content <- hGetContents handle
 	let linesOfFile = lines content
 	return $ parseTasks linesOfFile
-
-parseTasks [] = []
-
-parseTasks linesOfFile =
-	let 
-		taskLines = take 4 linesOfFile
-		rest = drop 4 linesOfFile
-		newTask = parseTask taskLines
-	in if (isNothing newTask)
-			then parseTasks rest
-			else (fromJust newTask):parseTasks rest
-
-parseTask taskLines =
-	let
-		taskName = taskLines !! 0
-		date = parseDate (taskLines !! 1)
-		rep = parseRep (taskLines !! 2)
-		isComp = parseBool (taskLines !! 3)
-	in if (isNothing date || isNothing rep || isNothing isComp)
-			then Nothing
-			else Just Task {name = taskName, time = fromJust date, repeatability = fromJust rep, isCompleted = fromJust isComp}
-		
-
-parseRep "Jednorazowe" = Just NoRepeat
-parseRep "Codzienne" = Just EveryDay
-parseRep "Cotygodniowe" = Just EveryWeek
-parseRep "Comiesięczne" = Just EveryMonth
-parseRep "Coroczne" = Just EveryYear
-parseRep _ = Nothing
-
-parseBool "True" = Just True
-parseBool "False" = Just False
-parseBool _ = Nothing
-
-parseDate text =
-	parseTime defaultTimeLocale "%Y-%m-%d %T UTC" text :: Maybe UTCTime
-
 
