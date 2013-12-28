@@ -29,4 +29,4 @@ instance Show TaskBook where
     show (TaskBook date tasks) = (show date) ++ (showTasks tasks)
 
 showTasks [] = "\n"
-showTasks (first:rest) = (showTasks rest)++ (show $ length rest) ++ " - " ++ (show first) ++ "\n"
+showTasks (first:rest) = (showTasks rest) ++ (show $ 1 + length rest) ++ " - " ++ (show first) ++ "\n"
