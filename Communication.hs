@@ -35,9 +35,15 @@ menu (TaskBook date tasks) = do
             putStrLn "Wyświetlanie zadań"
             print (TaskBook date tasks)
             task <- chooseTask tasks
-            putStrLn "wybrane zadanie:"
-            print task
-            menu (TaskBook date tasks)
+            if (isNothing task)
+                then	menu (TaskBook date tasks)
+                else	do
+                    putStrLn "wybrane zadanie:"
+                    print $ fromJust task
+                    modifyTask (TaskBook date tasks) (fromJust task)
+--            putStrLn "wybrane zadanie:"
+--            print task
+--            menu (TaskBook date tasks)
         4 -> do
             putStrLn ("Czas programu: " ++ show(date))
             menu (TaskBook date tasks)
@@ -96,11 +102,32 @@ getDate = do
 	return parse
 
 chooseTask tasks = do
-    putStrLn "Podaj numer zadania:"
+    putStrLn "Wybierz zadanie lub wróć do menu(0):"
     choice <- getLine
     let choiceNr = read (choice)::Int
-    if(choiceNr>=0 && choiceNr < (length tasks)) then return $ (!!) tasks choiceNr
-        else chooseTask tasks
+    if(choiceNr == 0) then return Nothing
+    else if(choiceNr>0 && choiceNr < (1+length tasks)) then return $ Just  (tasks !! (length tasks - choiceNr))
+    else chooseTask tasks
+
+modifyTask (TaskBook date tasks) task = do
+    putStrLn "Wybierz opcję:"
+    putStrLn "1 - Usuń zadanie"
+    putStrLn "2 - Oznacz zadanie jako wykonane"
+    putStrLn "0 - Wróć"
+    choice <- getLine
+    case (read choice::Int) of
+        0 -> do
+            putStrLn "Powrót do menu"
+            menu (TaskBook date tasks)
+        1 -> do
+            putStrLn "usuwanie zadania"
+            menu (TaskBook date tasks)
+        2 -> do
+            putStrLn "oznaczanie zadania"
+            menu (TaskBook date tasks)
+        _ -> do
+            putStrLn "Nieprawidłowy wybór"
+            modifyTask (TaskBook date tasks) task
 
 addDay (UTCTime day time) = UTCTime (addDays 1 day) time
 addWeek (UTCTime day time) = UTCTime (addDays 7 day) time
