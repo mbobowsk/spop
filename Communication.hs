@@ -22,16 +22,15 @@ menu (TaskBook date tasks) = do
     putStrLn "6 - Zapisz do pliku"
     putStrLn "7 - Wczytaj z pliku"
     putStrLn "0 - Wyjdź"
-    c <- getLine
-    case (read c::Int) of
-        1 ->do
-            putStrLn "choice is 1"
+    c <- getChar
+    putStrLn ""
+    case c of
+        '1' -> do
             newTask <- makeTask
             menu (TaskBook date (newTask:tasks))
-        2 -> do
-            putStrLn "choice is 2"
+        '2' -> do
             menu (TaskBook date tasks)
-        3 -> do
+        '3' -> do
 --        1)wszystkie 2)zrealizowane 3)niezrealizowane dzisiejsze i zaległe
             putStrLn "Wyświetlanie zadań"
             print (TaskBook date tasks)
@@ -39,21 +38,21 @@ menu (TaskBook date tasks) = do
             putStrLn "wybrane zadanie:"
             print task
             menu (TaskBook date tasks)
-        4 -> do
+        '4' -> do
             putStrLn ("Czas programu: " ++ show(date))
             menu (TaskBook date tasks)
-        5 -> do
+        '5' -> do
             time <- getSafeDate
             putStrLn ("Czas programu zmieniony na: " ++ show(time))
             menu (TaskBook time tasks)
-        6 -> do
+        '6' -> do
         		saveToFile tasks
         		menu (TaskBook date tasks)
-        7 -> do
+        '7' -> do
         		newTasks <- readFromFile tasks
         		menu (TaskBook date newTasks)
-        0 -> putStrLn "choice is 3"
-        _ ->do
+        '0' -> putStrLn "Do widzenia!"
+        _ -> do
             putStrLn "Nieprawidłowy wybór"
             menu (TaskBook date tasks)
 
@@ -72,13 +71,14 @@ getRepeatability = do
     putStrLn "3 - Co tydzień"
     putStrLn "4 - Co miesiąc"
     putStrLn "5 - Co rok"
-    choice <- getLine
-    case read (choice)::Int of
-        1 -> return NoRepeat
-        2 -> return EveryDay
-        3 -> return EveryWeek
-        4 -> return EveryMonth
-        5 -> return EveryYear
+    choice <- getChar
+    putStrLn ""
+    case choice of
+        '1' -> return NoRepeat
+        '2' -> return EveryDay
+        '3' -> return EveryWeek
+        '4' -> return EveryMonth
+        '5' -> return EveryYear
         _ -> do
             putStrLn "Nieprawidłowy wybór"
             getRepeatability
