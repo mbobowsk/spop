@@ -122,12 +122,46 @@ saveTasks (x:xs) handle = do
 	hPutStrLn handle (show(isCompleted x))
 	saveTasks xs handle
 
--- TODO parse
 readFromFile tasks = do
 	putStrLn "Podaj nazwę pliku:"
 	fileName <- getLine
-	fileExists <- doesFileExist fileName  
-	if fileExists  
-		then putStrLn "The file exist!"
-		else putStrLn "The file doesn't exist!"
+	fileExists <- doesFileExist fileName
+	doRead fileExists fileName tasks
+
+doRead False _ tasks = do
+	putStrLn "Plik nie istnieje!"
 	return tasks
+
+doRead True fileName tasks = do
+	handle <- openFile fileName ReadMode
+	content <- hGetContents handle
+	let linesOfFile = lines content
+	return $ parseTasks linesOfFile
+
+parseTasks [] = []
+
+parseTasks linesOfFile =
+	let 
+		taskLines = take 4 linesOfFile
+		rest = drop 4 linesOfFile
+		taskName = taskLines !! 0
+		--date = UTCTime (fromGregorian 2011 12 16) (fromIntegral $ 12 * 3600)
+		date = fromJust (parseDate (taskLines !! 1))
+		rep = parseRep (taskLines !! 2)
+		isComp = parseBool (taskLines !! 3)
+		newTask = Task {name = taskName, time = date, repeatability = rep, isCompleted = isComp}
+	in newTask:parseTasks rest
+	
+parseRep "Jednorazowe" = NoRepeat
+parseRep "Codzienne" = EveryDay
+parseRep "Cotygodniowe" = EveryWeek
+parseRep "Comiesięczne" = EveryMonth
+parseRep "Coroczne" = EveryYear
+
+parseBool "True" = True
+parseBool "False" = False
+
+parseDate text =
+	parseTime defaultTimeLocale "%Y-%m-%d %T UTC" text :: Maybe UTCTime
+
+
