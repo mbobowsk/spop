@@ -22,36 +22,36 @@ menu (TaskBook date tasks) = do
     putStrLn "6 - Zapisz do pliku"
     putStrLn "7 - Wczytaj z pliku"
     putStrLn "0 - Wyjdź"
-    c <- getChar
+    c <- getLine
     putStrLn ""
-    case c of
-        '1' -> do
+    case (read c::Int) of
+        1 -> do
             newTask <- makeTask
             menu (TaskBook date (newTask:tasks))
-        '2' -> do
+        2 -> do
             menu (TaskBook date tasks)
-        '3' -> do
+        3 -> do
 --        1)wszystkie 2)zrealizowane 3)niezrealizowane dzisiejsze i zaległe
             putStrLn "Wyświetlanie zadań"
             print (TaskBook date tasks)
-            task <- getChoiceNumber tasks
+            task <- chooseTask tasks
             putStrLn "wybrane zadanie:"
             print task
             menu (TaskBook date tasks)
-        '4' -> do
+        4 -> do
             putStrLn ("Czas programu: " ++ show(date))
             menu (TaskBook date tasks)
-        '5' -> do
+        5 -> do
             time <- getSafeDate
             putStrLn ("Czas programu zmieniony na: " ++ show(time))
             menu (TaskBook time tasks)
-        '6' -> do
+        6 -> do
         		saveToFile tasks
         		menu (TaskBook date tasks)
-        '7' -> do
+        7 -> do
         		newTasks <- readFromFile tasks
         		menu (TaskBook date newTasks)
-        '0' -> putStrLn "Do widzenia!"
+        0 -> putStrLn "Do widzenia!"
         _ -> do
             putStrLn "Nieprawidłowy wybór"
             menu (TaskBook date tasks)
@@ -71,14 +71,14 @@ getRepeatability = do
     putStrLn "3 - Co tydzień"
     putStrLn "4 - Co miesiąc"
     putStrLn "5 - Co rok"
-    choice <- getChar
+    choice <- getLine
     putStrLn ""
-    case choice of
-        '1' -> return NoRepeat
-        '2' -> return EveryDay
-        '3' -> return EveryWeek
-        '4' -> return EveryMonth
-        '5' -> return EveryYear
+    case (read choice::Int) of
+        1 -> return NoRepeat
+        2 -> return EveryDay
+        3 -> return EveryWeek
+        4 -> return EveryMonth
+        5 -> return EveryYear
         _ -> do
             putStrLn "Nieprawidłowy wybór"
             getRepeatability
@@ -95,12 +95,12 @@ getDate = do
 	let	parse = parseTime defaultTimeLocale "%Y-%m-%d %H:%M" dateString :: Maybe UTCTime
 	return parse
 
-getChoiceNumber tasks = do
+chooseTask tasks = do
     putStrLn "Podaj numer zadania:"
     choice <- getLine
     let choiceNr = read (choice)::Int
     if(choiceNr>=0 && choiceNr < (length tasks)) then return $ (!!) tasks choiceNr
-        else getChoiceNumber tasks
+        else chooseTask tasks
 
 addDay (UTCTime day time) = UTCTime (addDays 1 day) time
 addWeek (UTCTime day time) = UTCTime (addDays 7 day) time
