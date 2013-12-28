@@ -1,7 +1,6 @@
 module Communication
 ( menu,
-  makeTask,
-  getTimeNowString
+  makeTask
 ) where
 
 import Logic
@@ -15,13 +14,14 @@ import System.Directory
 
 menu (TaskBook date tasks) = do
     putStrLn "\nMENU GŁÓWNE"
-    putStrLn "1 - dodaj zadanie"
-    putStrLn "2 - usuń zadanie"
+    putStrLn "1 - Dodaj zadanie"
+    putStrLn "2 - Usuń zadanie"
     putStrLn "3 - Przeglądaj zadania"
-    putStrLn "4 - podaj czas systemowy"
-    putStrLn "5 - zapisz do pliku"
-    putStrLn "6 - wczytaj z pliku"
-    putStrLn "0 - wyjdź"
+    putStrLn "4 - Pokaż czas programu"
+    putStrLn "5 - Ustaw czas programu"
+    putStrLn "6 - Zapisz do pliku"
+    putStrLn "7 - Wczytaj z pliku"
+    putStrLn "0 - Wyjdź"
     c <- getLine
     case (read c::Int) of
         1 ->do
@@ -40,13 +40,16 @@ menu (TaskBook date tasks) = do
             print task
             menu (TaskBook date tasks)
         4 -> do
-            time <- getTimeNowString
-            putStrLn ("Czas systemowy: " ++ time)
+            putStrLn ("Czas programu: " ++ show(date))
             menu (TaskBook date tasks)
         5 -> do
+            time <- getSafeDate
+            putStrLn ("Czas programu zmieniony na: " ++ show(time))
+            menu (TaskBook time tasks)
+        6 -> do
         		saveToFile tasks
         		menu (TaskBook date tasks)
-        6 -> do
+        7 -> do
         		newTasks <- readFromFile tasks
         		menu (TaskBook date newTasks)
         0 -> putStrLn "choice is 3"
@@ -104,8 +107,6 @@ addWeek (UTCTime day time) = UTCTime (addDays 7 day) time
 addMonth (UTCTime day time) = UTCTime (addDays 30 day) time
 addYear (UTCTime day time) = UTCTime (addDays 365 day) time
 
-getTimeNowString = fmap (formatTime defaultTimeLocale "%Y-%m-%d %H:%M") getCurrentTime
-
 saveToFile tasks = do
 	putStrLn "Podaj nazwę pliku:"
 	fileName <- getLine
@@ -121,7 +122,7 @@ saveTasks (x:xs) handle = do
 	hPutStrLn handle (show(isCompleted x))
 	saveTasks xs handle
 
--- TODO read
+-- TODO parse
 readFromFile tasks = do
 	putStrLn "Podaj nazwę pliku:"
 	fileName <- getLine
