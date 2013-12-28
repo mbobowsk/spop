@@ -10,6 +10,8 @@ import System.Locale
 import Data.Time
 import Data.Time.Format
 import Data.Maybe
+import System.IO
+import System.Directory
 
 menu (TaskBook date tasks) = do
     putStrLn "\nMENU GŁÓWNE"
@@ -17,6 +19,8 @@ menu (TaskBook date tasks) = do
     putStrLn "2 - usuń zadanie"
     putStrLn "3 - Przeglądaj zadania"
     putStrLn "4 - podaj czas systemowy"
+    putStrLn "5 - zapisz do pliku"
+    putStrLn "6 - wczytaj z pliku"
     putStrLn "0 - wyjdź"
     c <- getLine
     case (read c::Int) of
@@ -39,6 +43,12 @@ menu (TaskBook date tasks) = do
             time <- getTimeNowString
             putStrLn ("Czas systemowy: " ++ time)
             menu (TaskBook date tasks)
+        5 -> do
+        		saveToFile tasks
+        		menu (TaskBook date tasks)
+        6 -> do
+        		newTasks <- readFromFile tasks
+        		menu (TaskBook date newTasks)
         0 -> putStrLn "choice is 3"
         _ ->do
             putStrLn "Nieprawidłowy wybór"
@@ -95,3 +105,28 @@ addMonth (UTCTime day time) = UTCTime (addDays 30 day) time
 addYear (UTCTime day time) = UTCTime (addDays 365 day) time
 
 getTimeNowString = fmap (formatTime defaultTimeLocale "%Y-%m-%d %H:%M") getCurrentTime
+
+saveToFile tasks = do
+	putStrLn "Podaj nazwę pliku:"
+	fileName <- getLine
+	handle <- openFile fileName WriteMode
+	saveTasks tasks handle
+	hClose handle
+
+saveTasks [] _ = do return()
+saveTasks (x:xs) handle = do
+	hPutStrLn handle (name x)
+	hPutStrLn handle (show(time x))
+	hPutStrLn handle (show(repeatability x))
+	hPutStrLn handle (show(isCompleted x))
+	saveTasks xs handle
+
+-- TODO read
+readFromFile tasks = do
+	putStrLn "Podaj nazwę pliku:"
+	fileName <- getLine
+	fileExists <- doesFileExist fileName  
+	if fileExists  
+		then putStrLn "The file exist!"
+		else putStrLn "The file doesn't exist!"
+	return tasks
