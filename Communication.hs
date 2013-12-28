@@ -111,8 +111,8 @@ chooseTask tasks = do
     choice <- getLine
     let choiceNr = read (choice)::Int
     if(choiceNr == 0) then return Nothing
-    else if(choiceNr>0 && choiceNr < (1+length tasks)) then return $ Just  (tasks !! (length tasks - choiceNr))
-    else chooseTask tasks
+    	else if(choiceNr>0 && choiceNr < (1+length tasks)) then return $ Just  (tasks !! (length tasks - choiceNr))
+    		else chooseTask tasks
 
 modifyTask (TaskBook date tasks) task = do
     putStrLn "Wybierz opcję:"
