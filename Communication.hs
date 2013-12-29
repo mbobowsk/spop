@@ -103,8 +103,14 @@ getSafeDate = do
 getDate = do
 	putStrLn "Podaj datę w formacie yyyy-mm-dd HH:MM:"
 	dateString <- getLine
-	let	parse = parseTime defaultTimeLocale "%Y-%m-%d %H:%M" dateString :: Maybe UTCTime
-	return parse
+	let
+		parsedTime = parseTime defaultTimeLocale "%Y-%m-%d %H:%M" dateString :: Maybe UTCTime
+		parseable = preparse dateString
+	returnDate parseable parsedTime
+
+-- Wrapper for return function
+returnDate False _ = return Nothing
+returnDate True parsedTime = return parsedTime
 
 chooseTask tasks = do
     putStrLn "Wybierz zadanie lub wróć do menu(0):"
