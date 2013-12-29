@@ -1,7 +1,8 @@
 module Parser
 (
 	parseTasks,
-	preparse
+	preparse,
+	substr
 ) where
 
 import Logic

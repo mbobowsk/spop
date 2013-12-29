@@ -12,6 +12,7 @@ import Data.Time.Format
 import Data.Maybe
 import System.IO
 import System.Directory
+import Data.Char
 
 menu (TaskBook date tasks) = do
     putStrLn "\nMENU GŁÓWNE"
@@ -24,8 +25,7 @@ menu (TaskBook date tasks) = do
     putStrLn "7 - Wczytaj z pliku"
     putStrLn "0 - Wyjdź"
     c <- getLine
-    putStrLn ""
-    case (read c::Int) of
+    case (getNumberFromLine c) of
         1 -> do
             newTask <- makeTask
             menu (TaskBook date (newTask:tasks))
@@ -63,6 +63,16 @@ menu (TaskBook date tasks) = do
             putStrLn "Nieprawidłowy wybór"
             menu (TaskBook date tasks)
 
+getNumberFromLine line =
+	let
+		lengthOk = length line > 0
+		digitOk = isDigit (line !! 0)
+		digit = substr line 0 0
+	in
+		if (lengthOk && digitOk)
+			then read digit :: Int
+			else 9 -- magic number		
+
 makeTask = do
     putStrLn "Podaj nazwe zadania:"
     taskName <- getLine
@@ -79,8 +89,7 @@ getRepeatability = do
     putStrLn "4 - Co miesiąc"
     putStrLn "5 - Co rok"
     choice <- getLine
-    putStrLn ""
-    case (read choice::Int) of
+    case (getNumberFromLine choice) of
         1 -> return NoRepeat
         2 -> return EveryDay
         3 -> return EveryWeek
@@ -126,7 +135,7 @@ modifyTask (TaskBook date tasks) task = do
     putStrLn "2 - Oznacz zadanie jako wykonane"
     putStrLn "0 - Wróć"
     choice <- getLine
-    case (read choice::Int) of
+    case (getNumberFromLine choice) of
         0 -> do
             putStrLn "Powrót do menu"
             menu (TaskBook date tasks)
