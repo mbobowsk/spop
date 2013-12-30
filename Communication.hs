@@ -16,46 +16,31 @@ import Data.Char
 
 menu (TaskBook date tasks) = do
     putStrLn "\nMENU GŁÓWNE"
-    putStrLn "1 - Dodaj zadanie"
-    putStrLn "2 - Usuń zadanie"
-    putStrLn "3 - Przeglądaj zadania"
-    putStrLn "4 - Pokaż czas programu"
-    putStrLn "5 - Ustaw czas programu"
-    putStrLn "6 - Zapisz do pliku"
-    putStrLn "7 - Wczytaj z pliku"
-    putStrLn "0 - Wyjdź"
+    putStrLn "1) - Dodaj zadanie"
+    putStrLn "2) - Przeglądaj zadania"
+    putStrLn "3) - Pokaż czas programu"
+    putStrLn "4) - Ustaw czas programu"
+    putStrLn "5) - Zapisz do pliku"
+    putStrLn "6) - Wczytaj z pliku"
+    putStrLn "0) - Wyjdź"
     c <- getLine
     case (getNumberFromLine c) of
         1 -> do
             newTask <- makeTask
             menu (TaskBook date (newTask:tasks))
         2 -> do
-            menu (TaskBook date tasks)
+            tasksMenu (TaskBook date tasks)
         3 -> do
---        1)wszystkie 2)zrealizowane 3)niezrealizowane dzisiejsze i zaległe
-            putStrLn "Wyświetlanie zadań"
-            print (TaskBook date tasks)
-            task <- chooseTask tasks
-            if (isNothing task)
-                then	menu (TaskBook date tasks)
-                else	do
-                    putStrLn "wybrane zadanie:"
-                    print $ fromJust task
-                    modifyTask (TaskBook date tasks) (fromJust task)
---            putStrLn "wybrane zadanie:"
---            print task
---            menu (TaskBook date tasks)
-        4 -> do
             putStrLn ("Czas programu: " ++ show(date))
             menu (TaskBook date tasks)
-        5 -> do
+        4 -> do
             time <- getSafeDate
             putStrLn ("Czas programu zmieniony na: " ++ show(time))
             menu (TaskBook time tasks)
-        6 -> do
+        5 -> do
         		saveToFile tasks
         		menu (TaskBook date tasks)
-        7 -> do
+        6 -> do
         		newTasks <- readFromFile tasks
         		menu (TaskBook date newTasks)
         0 -> putStrLn "Do widzenia!"
@@ -83,11 +68,11 @@ makeTask = do
 -- gets from user repeatability of task
 getRepeatability = do
     putStrLn "Powtarzalność zadania:"
-    putStrLn "1 - Jednorazowe"
-    putStrLn "2 - Codziennie"
-    putStrLn "3 - Co tydzień"
-    putStrLn "4 - Co miesiąc"
-    putStrLn "5 - Co rok"
+    putStrLn "1) - Jednorazowe"
+    putStrLn "2) - Codziennie"
+    putStrLn "3) - Co tydzień"
+    putStrLn "4) - Co miesiąc"
+    putStrLn "5) - Co rok"
     choice <- getLine
     case (getNumberFromLine choice) of
         1 -> return NoRepeat
@@ -121,6 +106,50 @@ getDate = do
 returnDate False _ = return Nothing
 returnDate True parsedTime = return parsedTime
 
+tasksMenu (TaskBook date tasks) = do
+    putStrLn "Wybierz zadania do wyświetlenia:"
+    putStrLn "1) - Wszystkie"
+    putStrLn "2) - Zrealizowane"
+    putStrLn "3) - Do zrobienia dzisiaj i zaległe"
+    putStrLn "0) - powrót do menu"
+    choice <- getLine
+    case (read choice::Int) of
+        0 -> do
+            menu (TaskBook date tasks)
+        1 -> do
+            print (TaskBook date tasks)
+            task <- chooseTask tasks
+            if (isNothing task)
+                then	menu (TaskBook date tasks)
+                else	do
+                    putStrLn "wybrane zadanie:"
+                    print $ fromJust task
+                    modifyTask (TaskBook date tasks) (fromJust task)
+        2 -> do
+            let completedTasks = filter (\(Task _ _ _ isCompleted) -> isCompleted) tasks
+            print (TaskBook date completedTasks)
+            task <- chooseTask completedTasks
+            if (isNothing task)
+                then	menu (TaskBook date tasks)
+                else	do
+                    putStrLn "wybrane zadanie:"
+                    print $ fromJust task
+                    modifyTask (TaskBook date tasks) (fromJust task)
+        3 -> do
+            (UTCTime today time) <- date
+            let todoTasks = filter (isTodoTask today) tasks
+            print (TaskBook date todoTasks)
+            task <- chooseTask todoTasks
+            if (isNothing task)
+                then	menu (TaskBook date tasks)
+                else	do
+                    putStrLn "wybrane zadanie:"
+                    print $ fromJust task
+                    modifyTask (TaskBook date tasks) (fromJust task)
+        _ -> do
+            putStrLn "Nieprawidłowy wybór"
+            tasksMenu (TaskBook date tasks)
+
 chooseTask tasks = do
     putStrLn "Wybierz zadanie lub wróć do menu(0):"
     choice <- getLine
@@ -141,13 +170,45 @@ modifyTask (TaskBook date tasks) task = do
             menu (TaskBook date tasks)
         1 -> do
             putStrLn "usuwanie zadania"
-            menu (TaskBook date tasks)
+            deleteTask (TaskBook date tasks) task
         2 -> do
             putStrLn "oznaczanie zadania"
-            menu (TaskBook date tasks)
+            markTaskAsCompleted (TaskBook date tasks) task
         _ -> do
             putStrLn "Nieprawidłowy wybór"
             modifyTask (TaskBook date tasks) task
+
+
+deleteTask  (TaskBook date tasks) task = do
+   let newTasks = filter (/=task) tasks
+   putStrLn "Task deleted"
+   menu (TaskBook date newTasks)
+
+isTodoTask today (Task _ (UTCTime day time) _ isCompleted) =
+    if(not isCompleted && (day <= today)) then True
+    else False
+
+markTaskAsCompleted (TaskBook date tasks) task = do
+    let newTasks = map (\t -> if t==task then setTaskCompleted t else t) tasks
+    let (Task name time repeatability isCompleted) = task
+    if repeatability /= NoRepeat then
+        case repeatability of
+        EveryDay -> do
+            let newTask = (Task name (addDay time) repeatability False)
+            menu (TaskBook date (newTask:newTasks))
+        EveryWeek -> do
+            let newTask = (Task name (addWeek time) repeatability False)
+            menu (TaskBook date (newTask:newTasks))
+        EveryMonth -> do
+            let newTask = (Task name (addMonth time) repeatability False)
+            menu (TaskBook date (newTask:newTasks))
+        EveryYear -> do
+            let newTask = (Task name (addYear time) repeatability False)
+            menu (TaskBook date (newTask:newTasks))
+        else
+            menu (TaskBook date newTasks)
+
+setTaskCompleted (Task name time repeatability _) = (Task name time repeatability True)
 
 addDay (UTCTime day time) = UTCTime (addDays 1 day) time
 addWeek (UTCTime day time) = UTCTime (addDays 7 day) time
