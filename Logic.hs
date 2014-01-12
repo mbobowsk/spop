@@ -12,7 +12,7 @@ data Task = Task { name :: String
                      , time :: UTCTime
                      , repeatability :: Repeat
                      , isCompleted::Bool
-                     } deriving (Show)
+                     }
 
 data TaskBook = TaskBook {date::UTCTime,
                             tasks::[Task]}
@@ -27,6 +27,10 @@ instance Show Repeat where
 
 instance Show TaskBook where
     show (TaskBook date tasks) = (show date) ++ (showTasks tasks)
+
+instance Show Task where
+    show (Task name time repeatability isCompleted) = "{" ++ name ++ ", " ++ (show time) ++ ", " ++ (show repeatability)
+     ++ ", ukończone:" ++ (show isCompleted) ++"}"
 
 instance Eq Task where
     (Task name time repeatability isCompleted) == (Task name2 time2 repeatability2 isCompleted2) =

@@ -56,7 +56,7 @@ getNumberFromLine line =
 	in
 		if (lengthOk && digitOk)
 			then read digit :: Int
-			else 9 -- magic number		
+			else 999 -- magic number
 
 makeTask = do
     putStrLn "Podaj nazwe zadania:"
@@ -136,7 +136,7 @@ tasksMenu (TaskBook date tasks) = do
                     print $ fromJust task
                     modifyTask (TaskBook date tasks) (fromJust task)
         3 -> do
-            (UTCTime today time) <- date
+            let (UTCTime today time) = date
             let todoTasks = filter (isTodoTask today) tasks
             print (TaskBook date todoTasks)
             task <- chooseTask todoTasks
