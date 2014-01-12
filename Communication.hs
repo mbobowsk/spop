@@ -14,6 +14,7 @@ import System.IO
 import System.Directory
 import Data.Char
 
+-- Main loop
 menu (TaskBook date tasks) = do
     putStrLn "\nMENU GŁÓWNE"
     putStrLn "1) - Dodaj zadanie"
@@ -48,6 +49,7 @@ menu (TaskBook date tasks) = do
             putStrLn "Nieprawidłowy wybór"
             menu (TaskBook date tasks)
 
+-- Safely gets first digit from String
 getNumberFromLine line =
 	let
 		lengthOk = length line > 0
@@ -58,6 +60,7 @@ getNumberFromLine line =
 			then read digit :: Int
 			else 999 -- magic number
 
+-- Creates new task
 makeTask = do
     putStrLn "Podaj nazwe zadania:"
     taskName <- getLine
@@ -65,7 +68,7 @@ makeTask = do
     date <- getSafeDate
     return $ Task {name = taskName, time = date, repeatability = rep, isCompleted = False}
 
--- gets from user repeatability of task
+-- Gets from user repeatability of task
 getRepeatability = do
     putStrLn "Powtarzalność zadania:"
     putStrLn "1) - Jednorazowe"
@@ -106,6 +109,7 @@ getDate = do
 returnDate False _ = return Nothing
 returnDate True parsedTime = return parsedTime
 
+-- Task submenu
 tasksMenu (TaskBook date tasks) = do
     putStrLn "Wybierz zadania do wyświetlenia:"
     putStrLn "1) - Wszystkie"
@@ -150,6 +154,7 @@ tasksMenu (TaskBook date tasks) = do
             putStrLn "Nieprawidłowy wybór"
             tasksMenu (TaskBook date tasks)
 
+-- Choosing task from list
 chooseTask tasks = do
     putStrLn "Wybierz zadanie lub wróć do menu(0):"
     choice <- getLine
@@ -158,6 +163,7 @@ chooseTask tasks = do
     	else if(choiceNr>0 && choiceNr < (1+length tasks)) then return $ Just  (tasks !! (length tasks - choiceNr))
     		else chooseTask tasks
 
+-- Modify task submenu
 modifyTask (TaskBook date tasks) task = do
     putStrLn "Wybierz opcję:"
     putStrLn "1 - Usuń zadanie"
@@ -178,7 +184,7 @@ modifyTask (TaskBook date tasks) task = do
             putStrLn "Nieprawidłowy wybór"
             modifyTask (TaskBook date tasks) task
 
-
+-- Deleting task
 deleteTask  (TaskBook date tasks) task = do
    let newTasks = filter (/=task) tasks
    putStrLn "Task deleted"
@@ -188,6 +194,7 @@ isTodoTask today (Task _ (UTCTime day time) _ isCompleted) =
     if(not isCompleted && (day <= today)) then True
     else False
 
+-- Completing a task
 markTaskAsCompleted (TaskBook date tasks) task = do
     let newTasks = map (\t -> if t==task then setTaskCompleted t else t) tasks
     let (Task name time repeatability isCompleted) = task
@@ -210,11 +217,13 @@ markTaskAsCompleted (TaskBook date tasks) task = do
 
 setTaskCompleted (Task name time repeatability _) = (Task name time repeatability True)
 
+-- Date arithmetic
 addDay (UTCTime day time) = UTCTime (addDays 1 day) time
 addWeek (UTCTime day time) = UTCTime (addDays 7 day) time
 addMonth (UTCTime day time) = UTCTime (addDays 30 day) time
 addYear (UTCTime day time) = UTCTime (addDays 365 day) time
 
+-- Writing data from file
 saveToFile tasks = do
 	putStrLn "Podaj nazwę pliku:"
 	fileName <- getLine
@@ -230,6 +239,7 @@ saveTasks (x:xs) handle = do
 	hPutStrLn handle (show(isCompleted x))
 	saveTasks xs handle
 
+-- Reading data from file
 readFromFile tasks = do
 	putStrLn "Podaj nazwę pliku:"
 	fileName <- getLine
